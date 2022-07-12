@@ -79,6 +79,8 @@ def generate_permutations(target, endpoints, options):
         f.write("PrivateKey = %s\n" % options.wg_key)
         f.write("Address = %s\n" % options.wg_address)
         f.write("DNS = 193.138.218.74\n")
+        if options.wg_mtu:
+            f.write("MTU = %d\n" % options.wg_mtu)
         f.write("\n")
         f.write("[Peer]\n")
         f.write("PublicKey = %s\n" % target_pubkey)
@@ -106,6 +108,9 @@ if __name__ == "__main__":
             type=int)
     parser.add_argument('--json', help="Mullvad endpoint JSON file",
             required=True)
+    parser.add_argument('--wg-mtu',
+            help="MTU to use for WireGuard interface",
+            type=int)
     parser.add_argument('--wg-key',
             help="User's Mullvad private key", required=True)
     parser.add_argument('--wg-address',
@@ -121,6 +126,9 @@ if __name__ == "__main__":
 
     if len(args.wg_key) != 44:
         parser.error("Specified WireGuard key is not valid.")
+
+    if args.wg_mtu <= 1279 or args.wg_mtu >= 8921:
+        parser.error("MTU must be between 1280 and 8920, not: %d" % args.wg_mtu)
 
     f = open(args.json, 'r').read()
     f_json = json.loads(f)
